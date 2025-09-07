@@ -1,5 +1,3 @@
-
-
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -8,13 +6,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import io.qameta.allure.Description;
+import io.qameta.allure.junit4.DisplayName;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 @RunWith(Parameterized.class)
@@ -28,7 +27,7 @@ public class OrderCreationTest {
         this.orderData = createOrderData();
     }
 
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "Цвета самоката: {0}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {new String[]{"BLACK"}},
@@ -44,6 +43,8 @@ public class OrderCreationTest {
     }
 
     @Test
+    @DisplayName("Создание заказа с разными цветами самоката")
+    @Description("Тест проверяет создание заказа с различными вариантами выбора цвета самоката")
     public void testCreateOrderWithDifferentColors() {
         createOrderWithColors(colors);
         verifyOrderCreatedSuccessfully();
@@ -56,21 +57,14 @@ public class OrderCreationTest {
             orderData.put("color", colors);
         }
 
-        Response response = given()
-                .header("Content-type", "application/json")
-                .body(orderData)
-                .when()
-                .post("/api/v1/orders");
-
+        Response response = OrderApi.createOrder(orderData);
         response.then().statusCode(201);
         trackId = response.path("track");
     }
 
     @Step("Проверка успешного создания заказа")
     private void verifyOrderCreatedSuccessfully() {
-        given()
-                .when()
-                .get("/api/v1/orders/track?t=" + trackId)
+        OrderApi.getOrderByTrack(trackId)
                 .then()
                 .statusCode(200)
                 .body("order", notNullValue());
@@ -95,12 +89,8 @@ public class OrderCreationTest {
     public void tearDown() {
         if (trackId != 0) {
             try {
-                // Просто пытаемся отменить заказ без проверки результата
-                given()
-                        .header("Content-type", "application/json")
-                        .body("{\"track\": " + trackId + "}")
-                        .when()
-                        .put("/api/v1/orders/cancel");
+                // Используем OrderApi для отмены заказа
+                OrderApi.cancelOrder(trackId);
             } catch (Exception e) {
                 System.out.println("Не удалось отменить заказ с trackId: " + trackId);
             }

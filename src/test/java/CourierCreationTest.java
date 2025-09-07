@@ -1,6 +1,4 @@
-import com.google.gson.Gson;
 import io.qameta.allure.Description;
-import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -8,14 +6,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class CourierCreationTest {
     private Courier testCourier;
     private String courierId;
-    Gson gson = new Gson();
 
     @Before
     public void setUp() {
@@ -29,7 +24,7 @@ public class CourierCreationTest {
         String timestamp = String.valueOf(System.currentTimeMillis());
         testCourier = new Courier("courier_" + timestamp, "password123", "Test Courier");
 
-        createCourier(testCourier)
+        CourierApi.createCourier(testCourier)
                 .then()
                 .statusCode(201)
                 .body("ok", equalTo(true));
@@ -42,11 +37,11 @@ public class CourierCreationTest {
         String timestamp = String.valueOf(System.currentTimeMillis());
         testCourier = new Courier("duplicate_" + timestamp, "password123", "Duplicate Courier");
 
-        createCourier(testCourier)
+        CourierApi.createCourier(testCourier)
                 .then()
                 .statusCode(201);
 
-        createCourier(testCourier)
+        CourierApi.createCourier(testCourier)
                 .then()
                 .statusCode(409)
                 .body("message", equalTo("Этот логин уже используется. Попробуйте другой."));
@@ -60,7 +55,7 @@ public class CourierCreationTest {
         courierWithoutLogin.setPassword("password123");
         courierWithoutLogin.setFirstName("No Login Courier");
 
-        createCourier(courierWithoutLogin)
+        CourierApi.createCourier(courierWithoutLogin)
                 .then()
                 .statusCode(400)
                 .body("message", equalTo("Недостаточно данных для создания учетной записи"));
@@ -74,7 +69,7 @@ public class CourierCreationTest {
         courierWithoutPassword.setLogin("no_password_" + System.currentTimeMillis());
         courierWithoutPassword.setFirstName("No Password Courier");
 
-        createCourier(courierWithoutPassword)
+        CourierApi.createCourier(courierWithoutPassword)
                 .then()
                 .statusCode(400)
                 .body("message", equalTo("Недостаточно данных для создания учетной записи"));
@@ -88,7 +83,7 @@ public class CourierCreationTest {
         courierWithoutFirstName.setLogin("no_name_" + System.currentTimeMillis());
         courierWithoutFirstName.setPassword("password123");
 
-        createCourier(courierWithoutFirstName)
+        CourierApi.createCourier(courierWithoutFirstName)
                 .then()
                 .statusCode(201)
                 .body("ok", equalTo(true));
@@ -101,7 +96,7 @@ public class CourierCreationTest {
         String timestamp = String.valueOf(System.currentTimeMillis());
         testCourier = new Courier("existing_" + timestamp, "password123", "Existing Courier");
 
-        createCourier(testCourier)
+        CourierApi.createCourier(testCourier)
                 .then()
                 .statusCode(201);
 
@@ -111,51 +106,25 @@ public class CourierCreationTest {
                 "Different Name"
         );
 
-        createCourier(duplicateCourier)
+        CourierApi.createCourier(duplicateCourier)
                 .then()
                 .statusCode(409)
                 .body("message", equalTo("Этот логин уже используется. Попробуйте другой."));
     }
 
-    @Step("Создание курьера")
-    private Response createCourier(Courier courier) {
-        String json = gson.toJson(courier);
-        return given()
-                .header("Content-type", "application/json")
-                .body(json)
-                .when()
-                .post("/api/v1/courier");
-    }
-
-    @Step("Логин курьера")
-    private Response loginCourier(String login, String password) {
-        Courier loginData = new Courier();
-        loginData.setLogin(login);
-        loginData.setPassword(password);
-
-        return given()
-                .header("Content-type", "application/json")
-                .body(loginData)
-                .when()
-                .post("/api/v1/courier/login");
-    }
-
-    @Step("Удаление курьера")
-    private Response deleteCourier(String courierId) {
-        return given()
-                .when()
-                .delete("/api/v1/courier/" + courierId);
-    }
-
     @After
-    @Step("Очистка тестовых данных")
     public void tearDown() {
         if (testCourier != null && testCourier.getLogin() != null) {
-            Response loginResponse = loginCourier(testCourier.getLogin(), testCourier.getPassword());
+            // Создаем объект для логина
+            Courier loginData = new Courier();
+            loginData.setLogin(testCourier.getLogin());
+            loginData.setPassword(testCourier.getPassword());
+
+            Response loginResponse = CourierApi.loginCourier(loginData);
 
             if (loginResponse.statusCode() == 200) {
                 courierId = loginResponse.path("id").toString();
-                deleteCourier(courierId).then().statusCode(200);
+                CourierApi.deleteCourier(courierId).then().statusCode(200);
             }
         }
     }

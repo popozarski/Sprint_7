@@ -1,15 +1,11 @@
-
-
-import io.qameta.allure.Step;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.Before;
 import org.junit.Test;
+import io.qameta.allure.Description;
+import io.qameta.allure.junit4.DisplayName;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
 
 public class OrderListTest {
 
@@ -19,25 +15,13 @@ public class OrderListTest {
     }
 
     @Test
+    @DisplayName("Получение списка заказов")
+    @Description("Тест проверяет получение списка всех заказов из системы")
     public void testGetOrderList() {
-        getOrderList();
-        verifyOrderListResponse();
-    }
-
-    @Step("Получение списка заказов")
-    private Response getOrderList() {
-        return given()
-                .when()
-                .get("/api/v1/orders");
-    }
-
-    @Step("Проверка ответа со списком заказов")
-    private void verifyOrderListResponse() {
-        Response response = getOrderList();
+        Response response = OrderApi.getOrderList();
 
         response.then()
                 .statusCode(200)
                 .body("orders", notNullValue());
-
     }
 }
