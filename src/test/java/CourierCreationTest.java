@@ -5,6 +5,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,22 +21,6 @@ public class CourierCreationTest {
     @Step("Настройка базового URI")
     public void setUp() {
         RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru";
-    }
-
-    public static class Courier {
-        private String login;
-        private String password;
-        private String firstName;
-
-        public Courier(String login, String password, String firstName) {
-            this.login = login;
-            this.password = password;
-            this.firstName = firstName;
-        }
-
-        public String getLogin() { return login; }
-        public String getPassword() { return password; }
-        public String getFirstName() { return firstName; }
     }
 
     // Успешное создание курьера
@@ -132,6 +118,7 @@ public class CourierCreationTest {
     @Step("Создание тестового курьера: login={login}, password={password}, firstName={firstName}")
     private Courier createTestCourier(String login, String password, String firstName) {
         return new Courier(login, password, firstName);
+
     }
 
     @Step("Создание курьера")
@@ -152,7 +139,7 @@ public class CourierCreationTest {
                 .post("/api/v1/courier");
     }
 
-    @Step("Подготовка данных курьера без логина: password={password}, firstName={firstName}")
+    @Step("Подготовка данных курьера без логина")
     private Map<String, String> createCourierDataWithoutLogin(String password, String firstName) {
         Map<String, String> courierData = new HashMap<>();
         courierData.put("password", password);
@@ -189,7 +176,7 @@ public class CourierCreationTest {
                 .post("/api/v1/courier/login");
     }
 
-    @Step("Удаление курьера: id={courierId}")
+    @Step("Удаление курьера")
     private Response deleteCourier(String courierId) {
         return given()
                 .when()

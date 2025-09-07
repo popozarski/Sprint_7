@@ -5,7 +5,6 @@ import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,32 +19,6 @@ public class CourierLoginTests {
     private String originalLogin;
     private String originalPassword = "password123";
 
-    public class Courier {
-        private String login;
-        public String password;
-
-        public Courier(String login, String password){
-            this.login = login;
-            this.password = password;
-        }
-        public Courier(){}
-
-        public void setLogin(String login) {
-            this.login = login;
-        }
-
-        public String getLogin() {
-            return login;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-    }
 
     @Before
     @Step("Настройка тестового окружения и создание курьера")
