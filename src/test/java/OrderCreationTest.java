@@ -50,7 +50,7 @@ public class OrderCreationTest {
         verifyOrderCreatedSuccessfully();
     }
 
-    @Step("Создание заказа с цветами: {colors}")
+    @Step("Создание заказа с цветами")
     private void createOrderWithColors(String[] colors) {
         // Добавляем цвета в данные заказа, если они указаны
         if (colors != null) {
